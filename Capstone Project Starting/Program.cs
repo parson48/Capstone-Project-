@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Capstone_Project_Starting
@@ -10,7 +11,9 @@ namespace Capstone_Project_Starting
     {
         static void Main(string[] args)
         {
-            Hangman();
+            string dataPath = @"WordList\WordList.txt";
+
+            Hangman(dataPath);
         }
         
         /// <summary>
@@ -29,7 +32,7 @@ namespace Capstone_Project_Starting
         /// <summary>
         /// Plays a game of hangman
         /// </summary>
-        private static void Hangman()
+        private static void Hangman(string dataPath)
         {
             //
             //
@@ -37,14 +40,12 @@ namespace Capstone_Project_Starting
             //        
             //"changingWord" is the word that is shown, that slowly gets revealed.
             //"hiddenCharacters" is the hidden word converted into an array of characters, to be compared to changingWord
-
-            List<string> hiddenWordList = new List<string>()
+            //"hiddenWord" is the list of all the hangman words -  basic list in case WordList ever gets deleted
+            //
+            List<string> hiddenWords = new List<string>()
                 {
-                "statuesque", "contribute", "gold", "quack", "notice", "reset", "whip", "mundane"
+                "statuesque", "contribute", "gold", "quack", "notice", "reset", "whip", "mundane", "gallimaufry"
                 };
-            string[] hiddenWord = { "statuesque", "contribute", "gold", "quack", "notice", "reset", "whip", "mundane" };
-            int randomNumber = RandomNumber(0, hiddenWordList.Count);
-            char[] changingWord = new char[hiddenWord[randomNumber].Length];
             char[] hiddenCharacters;
             char userConvertedResponse;
             bool completedWord = false;
@@ -56,18 +57,25 @@ namespace Capstone_Project_Starting
 
             AlphabetCreation(alphabet);
 
+            //
+            // Initializes the hidden word, by checking all the user inputted words then randomly picking one from the list
+            //
+            ReadWordsFromFile(dataPath, hiddenWords);
+            int randomNumber = RandomNumber(0, hiddenWords.Count);
+            char[] changingWord = new char[hiddenWords[randomNumber].Length];
+
             // Writes down the hidden word, used only for testing
-            //WriteLine("{0}", hiddenWord[randomNumber]);
+            //WriteLine("{0}", hiddenWords[randomNumber]);
 
             //Makes the "hiddenCharacters" array into the hidden word
-            hiddenCharacters = hiddenWord[randomNumber].ToCharArray(0, hiddenWord[randomNumber].Length);
+            hiddenCharacters = hiddenWords[randomNumber].ToCharArray(0, hiddenWords[randomNumber].Length);
 
             DisplayScreenHeader("Hangman");
 
             //Writes out asterisks for each letter in the hidden word.
             Console.WriteLine();
             Console.Write("Word: ");
-            for (int i = 0; i < hiddenWord[randomNumber].Length; i++)
+            for (int i = 0; i < hiddenWords[randomNumber].Length; i++)
             {
                 changingWord[i] = '*';
                 Console.Write($"{changingWord[i]}");
@@ -116,7 +124,7 @@ namespace Capstone_Project_Starting
 
                 //Displays the current progress on the hidden word    
                 Console.Write("Word: ");
-                for (int i = 0; i < hiddenWord[randomNumber].Length; i++)
+                for (int i = 0; i < hiddenWords[randomNumber].Length; i++)
                 {
                     Console.Write($"{changingWord[i]}");
                 }
@@ -149,7 +157,7 @@ namespace Capstone_Project_Starting
 
             //Congratulates the user
             Console.WriteLine("Good job on guessing the hidden word!");
-            Console.WriteLine($"The hidden word was {hiddenWord[randomNumber]}.");
+            Console.WriteLine($"The hidden word was {hiddenWords[randomNumber]}.");
             Console.ReadKey();
         }
 
@@ -235,7 +243,7 @@ namespace Capstone_Project_Starting
         /// <summary>
         /// display continue prompt
         /// </summary>
-        static void DisplayContinuePrompt()
+        private static void DisplayContinuePrompt()
         {
             Console.WriteLine();
             Console.WriteLine("Press any key to continue.");
@@ -277,7 +285,7 @@ namespace Capstone_Project_Starting
         }
 
 
-        static void DisplayScreenHeader(string headerText)
+        private static void DisplayScreenHeader(string headerText)
         {
             Console.Clear();
             Console.WriteLine();
@@ -285,6 +293,28 @@ namespace Capstone_Project_Starting
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("***************************************************************");
             Console.ForegroundColor = ConsoleColor.White;
+        }
+
+        /// <summary>
+        /// Reads and Replaces the current hiddenWord list with the list from the file
+        /// </summary>
+        /// <param name="dataPath"></param>
+        /// <param name="hiddenWord"></param>
+        private static void ReadWordsFromFile(string dataPath, List<string> hiddenWord)
+        {
+            string[] listOfWords = File.ReadAllLines(dataPath);
+
+            for (int i = 0; i < listOfWords.Length; i++)
+                listOfWords[i] = listOfWords[i].ToLower();
+
+            foreach (string word in listOfWords)
+            {
+                if (!hiddenWord.Contains(word))
+                {
+                    hiddenWord.Add(word);
+                }
+            }
+
         }
     }
 
