@@ -13,9 +13,50 @@ namespace Capstone_Project_Starting
         {
             string dataPath = @"WordList\WordList.txt";
 
-            Hangman(dataPath);
+            MainMenu(dataPath);
         }
         
+   
+        private static void MainMenu(string dataPath)
+        {
+            //
+            // variable declaration
+            //
+            bool exitApplication = false;
+            char userConvertedResponse;
+
+            do
+            {
+                DisplayScreenHeader("Application Menu");
+
+                MenuLine("1", "Play Hangman");
+                MenuLine("2", "Add Words");
+                MenuLine("3", "Delete Words");
+                MenuLine("4", "Quit Application");
+
+                ConsoleKeyInfo userInput = Console.ReadKey();
+                userConvertedResponse = char.Parse(userInput.KeyChar.ToString().ToLower());
+                switch (userConvertedResponse)
+                {
+                    case ('1'):
+                        {
+                            Hangman(dataPath);
+                            break;
+                        }
+                    case ('2'):
+                        {
+
+                            break;
+                        }
+                    default:
+                        {
+                            Console.WriteLine("Invalid choice. Please select a number 1-X");
+                            break;
+                        }
+                }
+            } while (!exitApplication);
+        }
+
         /// <summary>
         /// Makes a line of the menu, coloring in the first part cyan and the second part white. 
         /// </summary>
