@@ -11,50 +11,75 @@ namespace Capstone_Project_Starting
     {
         static void Main(string[] args)
         {
-            string dataPath = @"WordList\WordList.txt";
+            string customWordDataPath = @"WordList\WordList.txt";
 
-            MainMenu(dataPath);
+            MainMenu(customWordDataPath);
         }
         
    
-        private static void MainMenu(string dataPath)
+        private static void MainMenu(string customWordDataPath)
         {
             //
             // variable declaration
             //
             bool exitApplication = false;
             char userConvertedResponse;
+            bool validResponse;
+            bool userDoneWithHangman = false;   
 
             do
             {
+
                 DisplayScreenHeader("Application Menu");
 
                 MenuLine("1", "Play Hangman");
                 MenuLine("2", "Add Words");
                 MenuLine("3", "Delete Words");
                 MenuLine("4", "Quit Application");
-
-                ConsoleKeyInfo userInput = Console.ReadKey();
-                userConvertedResponse = char.Parse(userInput.KeyChar.ToString().ToLower());
-                switch (userConvertedResponse)
+                do
                 {
-                    case ('1'):
-                        {
-                            Hangman(dataPath);
-                            break;
-                        }
-                    case ('2'):
-                        {
 
-                            break;
-                        }
-                    default:
-                        {
-                            Console.WriteLine("Invalid choice. Please select a number 1-X");
-                            break;
-                        }
-                }
+                    ConsoleKeyInfo userInput = Console.ReadKey();
+                    userConvertedResponse = char.Parse(userInput.KeyChar.ToString().ToLower());
+                    validResponse = true;
+                    switch (userConvertedResponse)
+                    {
+                        case ('1'):
+                            {
+                                do
+                                {
+                                    userDoneWithHangman = Hangman(customWordDataPath);
+                                } while (!userDoneWithHangman);
+                                
+                                break;
+                            }
+                        case ('2'):
+                            {
+
+                                break;
+                            }
+                        case ('3'):
+                            {
+
+                                break;
+                            }
+                        case ('4'):
+                            {
+                                exitApplication = true;
+                                Console.WriteLine("Exiting application, please come again soon!");
+                                DisplayContinuePrompt();
+                                break;
+                            }
+                        default:
+                            {
+                                Console.WriteLine("Invalid choice. Please select a number 1-X");
+                                validResponse = false;
+                                break;
+                            }
+                    }
+                } while (!validResponse);
             } while (!exitApplication);
+                
         }
 
         /// <summary>
@@ -73,7 +98,7 @@ namespace Capstone_Project_Starting
         /// <summary>
         /// Plays a game of hangman
         /// </summary>
-        private static void Hangman(string dataPath)
+        private static bool Hangman(string customWordDataPath)
         {
             //
             //
@@ -89,31 +114,37 @@ namespace Capstone_Project_Starting
                 };
             char[] hiddenCharacters;
             char userConvertedResponse;
+            bool validUserInput;
             bool completedWord = false;
             bool letterInWord = false;
             int completedCharacter;
             int hiddenCharactersPlacement;
             List<char> userPickedCharacters = new List<char>();
             List<char> alphabet = new List<char>();
+            bool userDoneWithHangman;
 
             AlphabetCreation(alphabet);
 
             //
             // Initializes the hidden word, by checking all the user inputted words then randomly picking one from the list
             //
-            ReadWordsFromFile(dataPath, hiddenWords);
+            ReadWordsFromFile(customWordDataPath, hiddenWords);
             int randomNumber = RandomNumber(0, hiddenWords.Count);
             char[] changingWord = new char[hiddenWords[randomNumber].Length];
 
             // Writes down the hidden word, used only for testing
             //WriteLine("{0}", hiddenWords[randomNumber]);
 
+            //
             //Makes the "hiddenCharacters" array into the hidden word
+            //
             hiddenCharacters = hiddenWords[randomNumber].ToCharArray(0, hiddenWords[randomNumber].Length);
 
             DisplayScreenHeader("Hangman");
 
+            //
             //Writes out asterisks for each letter in the hidden word.
+            //
             Console.WriteLine();
             Console.Write("Word: ");
             for (int i = 0; i < hiddenWords[randomNumber].Length; i++)
@@ -124,20 +155,61 @@ namespace Capstone_Project_Starting
             Console.WriteLine();
             Console.WriteLine();
 
-            //The loop that does it all. If all the asterisks are removed, exits the loop
+            //
+            //The loop that does it all. If all the asterisks are removed, or when the user presses '~' exits the loop
+            //
             do
             {
-                
-                // Reads the user's input of a letter. Does not check to see if the input is a number, as inputting a number would equal any of the hidden letter.
+                //
+                // Reads the user's input of a letter.
+                //
                 letterInWord = false;
                 Console.Write("Guess a letter >> ");
-                ConsoleKeyInfo userInput = Console.ReadKey();
-                userConvertedResponse = char.Parse(userInput.KeyChar.ToString().ToLower());
+                do
+                {
+                    validUserInput = false;
+                    ConsoleKeyInfo userInput = Console.ReadKey();
+                    userConvertedResponse = char.Parse(userInput.KeyChar.ToString().ToLower());
+
+                    //
+                    // Validation - making sure that the user input is either a letter A-Z or ~ (the exit key)
+                    // Pressing ~ exits to the main menu
+                    //
+                    if (userConvertedResponse == '~')
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("Exiting hangman!");
+                        userDoneWithHangman = true;
+                        validUserInput = true;
+                        DisplayContinuePrompt();
+                    }
+                    else
+                    {
+                        userDoneWithHangman = false;
+                        foreach (char letter in alphabet)
+                        {
+                            if (letter == userConvertedResponse)
+                            {
+                                validUserInput = true;
+                            }
+                        }
+                        if (!validUserInput)
+                        {
+                            Console.WriteLine();
+                            Console.WriteLine("Please Input a valid letter A-Z.");
+                        }
+                    }
+
+                } while (!validUserInput);
+
+
 
                 DisplayScreenHeader("Hangman");
 
+                //
                 //Checks every letter to see if it is equal to the user input.
-                //If it is equal, 
+                //If it is equal, sets the letter from an asterisk to the correct letter
+                //
                 hiddenCharactersPlacement = 0;
                 foreach (char c in hiddenCharacters)
                 {
@@ -151,7 +223,9 @@ namespace Capstone_Project_Starting
 
                 userPickedCharacters.Add(userConvertedResponse);
 
+                //
                 //Says if the letter is in the word or not.
+                //
                 if (letterInWord == true)
                 {
                     Console.WriteLine();
@@ -163,7 +237,9 @@ namespace Capstone_Project_Starting
                     Console.WriteLine("Sorry. {0} is not in the word.", userConvertedResponse);
                 }
 
+                //
                 //Displays the current progress on the hidden word    
+                //
                 Console.Write("Word: ");
                 for (int i = 0; i < hiddenWords[randomNumber].Length; i++)
                 {
@@ -171,12 +247,17 @@ namespace Capstone_Project_Starting
                 }
                 Console.WriteLine();
                 Console.WriteLine();
+
+                //
+                // Temporary gives the cursors position, so that displaying the picked letters does not disturb the rest of the layout
+                //
                 int tempTopCursorPosition = Console.CursorTop;
                 int tempLeftCursorPosition = Console.CursorLeft;
 
                 PickedLetterDisplay(alphabet, userPickedCharacters, tempLeftCursorPosition, tempTopCursorPosition);
-
+                //
                 // If all the asterisks are revealed, and thus all the letters have been guessed, it exits the loop.
+                //
                 completedCharacter = 0;
                 foreach (char c in changingWord)
                 {
@@ -194,12 +275,19 @@ namespace Capstone_Project_Starting
                     completedWord = true;
                 }
                 else { }
-            } while (!completedWord);
+            } while (!completedWord && !userDoneWithHangman) ;
 
-            //Congratulates the user
-            Console.WriteLine("Good job on guessing the hidden word!");
-            Console.WriteLine($"The hidden word was {hiddenWords[randomNumber]}.");
-            Console.ReadKey();
+            if (completedWord)
+            {
+                //
+                //Congratulates the user
+                //
+                Console.WriteLine("Good job on guessing the hidden word!");
+                Console.WriteLine($"The hidden word was {hiddenWords[randomNumber]}.");
+                Console.ReadKey();
+            }
+
+            return userDoneWithHangman;
         }
 
         /// <summary>
